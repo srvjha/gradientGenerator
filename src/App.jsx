@@ -1,15 +1,30 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import ColorPicker, { Color } from '@rc-component/color-picker';
 import '@rc-component/color-picker/assets/index.css';
 import './assets/index.less';
+import { Input } from "@/components/ui/input"
+
+
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "./components/ui/select"
+
 
 function App() {
     const [value, setValue] = useState(new Color('rgba(255,0,0,0)'));
-    const [colors,setColors] = useState(new Array(6).fill(''));
-    console.log({colors})
+    const [noOfColor , setNoOfColors] = useState(2);
+    console.log({noOfColor})
+    const [colors,setColors] = useState(new Array(noOfColor).fill(''));
+    //console.log({colors})
     const [selectedColor, setSelectedColor] = useState(new Array(6).fill(false));
     
-    
+    useEffect(()=>{
+      setColors(new Array(noOfColor).fill(''));
+    },[noOfColor])
 
     const handleChange = (nextValue) => {
         
@@ -37,18 +52,40 @@ function App() {
     }
     console.log({colors})
 
+    const handleSelectChange = (value)=>{
+      setNoOfColors(Number(value));
+    }
+
     return (
         <div className='bg-white min-h-screen p-2 bg-scroll'>
             <div className="  flex flex-col items-center justify-center">
-                <div className="text-[24px] font-extrabold mb-6 -ml-[1230px]">
+                <div className=" flex flex-row jaro mb-6 space-x-[900px] ">
+                  <div className='text-[24px]'>
                   <img 
                   src="https://www.shutterstock.com/image-vector/smooth-color-gradient-icon-logo-600nw-589145633.jpg" 
                   alt="icon" 
                   className="w-10 h-10 inline-block mr-2"
                   />
-                  Gradient Generator
+                  Pleck
                   </div>
-                <div className=' shadow-xl w-full rounded-lg h-[320px] ' style={{ backgroundImage:`linear-gradient(to right, ${colors.join(', ')}`}}></div>
+                  
+                  <div className='mt-2'>
+                  <Select onValueChange={handleSelectChange}>
+                    <SelectTrigger className="w-[260px]">
+                      <SelectValue placeholder="Choose no of Colors for Gradient" />
+                    </SelectTrigger>
+                    <SelectContent>
+                    <SelectItem value="2">2</SelectItem>
+                      <SelectItem value="3">3</SelectItem>
+                      <SelectItem value="4">4</SelectItem>
+                      <SelectItem value="5">5</SelectItem>
+                      <SelectItem value="6">6</SelectItem>
+                    </SelectContent>
+                  </Select>
+  
+                  </div>
+                </div>
+                <div className=' shadow-xl w-full rounded-lg h-[320px] ' style={{ backgroundImage:`linear-gradient(to right, ${colors.join(',')}`}}></div>
                 <div className="flex flex-row justify-center space-x-5 mt-4">
                     <ColorPicker
                         style={{ width: '500px',height:"290px" }}
@@ -115,6 +152,9 @@ function App() {
                 
                 </div>
                 
+            </div>
+            <div className="flex justify-end -mt-20 mr-5">
+              <div className='bg-blue-700 w-16 h-16 cursor-pointer text-center py-1 text-5xl text-white font-bold  rounded-full'>+</div>
             </div>
         </div>
     );
