@@ -1,10 +1,6 @@
 import { useEffect, useState } from 'react';
 import ColorPicker, { Color } from '@rc-component/color-picker';
 import '@rc-component/color-picker/assets/index.css';
-import './assets/index.less';
-import { Input } from "@/components/ui/input"
-
-
 import {
   Select,
   SelectContent,
@@ -12,53 +8,78 @@ import {
   SelectTrigger,
   SelectValue,
 } from "./components/ui/select"
-
+import { TextForm } from './components/AddForm/form';
+import { useSelector,useDispatch } from 'react-redux';
+import { openModal } from './redux/slices/modalSlice';
+import { IoMdDownload } from "react-icons/io";
+import { MdOutlineFileDownload } from "react-icons/md";
+import { downloadGradientAsPNG } from './features/downloadGradient';
 
 function App() {
     const [value, setValue] = useState(new Color('rgba(255,0,0,0)'));
-    const [noOfColor , setNoOfColors] = useState(2);
-    console.log({noOfColor})
-    const [colors,setColors] = useState(new Array(noOfColor).fill(''));
-    //console.log({colors})
+    const [noOfColor, setNoOfColors] = useState(2);
+    const [colors, setColors] = useState(new Array(noOfColor).fill(''));
     const [selectedColor, setSelectedColor] = useState(new Array(6).fill(false));
     
-    useEffect(()=>{
+   
+    const dispatch = useDispatch();
+    const formStatus = useSelector((modal)=>modal.modalReducers.status);
+    const displayText = useSelector((form)=>form.formReducers.text);
+    const selectedFont = useSelector((form)=>form.formReducers.fontOption);
+    const selectedTextTheme = useSelector((form)=>form.formReducers.textOption);
+    console.log({formStatus,displayText,selectedFont,selectedTextTheme})
+    let font;
+    switch (selectedFont) {
+      case "Jaro":
+        font = "jaro";
+        break;
+      case "Tinos":
+        font = "tinos-regular";
+        break;
+      case "Sans":
+        font = "font-sans";
+        break;
+      case "Serif":
+        font = "font-serif";
+        break;
+      case "Rubik":
+        font = "rubik-vinyl-regular";
+        break;
+      default:
+        font = "default-font"; // Provide a default value if necessary
+        break;
+    }
+    console.log(font)
+
+    
+    useEffect(() => {
       setColors(new Array(noOfColor).fill(''));
-    },[noOfColor])
+    }, [noOfColor]);
 
     const handleChange = (nextValue) => {
-        
-        console.log('Next Value:', nextValue.toRgbString());
-
         if (value.a === 0) {
-            nextValue = nextValue.setA(1); // Ensuring alpha value is set
+            nextValue = nextValue.setA(1);
         }
         setValue(nextValue);
-
     };
 
-    for(let i=0;i<6;i++){
+    for(let i = 0; i < 6; i++) {
       const randColorCode = Math.random().toString(16).slice(2, 8);
-      if(selectedColor[i] === true){
-        console.log(value.toHexString());
+      if(selectedColor[i] === true) {
         colors[i] = value.toHexString();
-        console.log(colors[i]);
-      }
-      //else if(colors[i]===)
-      else if(colors[i] === "") {
+      } else if(colors[i] === "") {
         colors[i] = `#${randColorCode}`;
       }
-        
     }
-    console.log({colors})
 
-    const handleSelectChange = (value)=>{
+    const handleSelectChange = (value) => {
       setNoOfColors(Number(value));
     }
 
     return (
-        <div className='bg-white min-h-screen p-2 bg-scroll'>
-            <div className="  flex flex-col items-center justify-center">
+      <div className="relative min-h-screen">
+        <div className={`bg-white min-h-screen p-2 bg-scroll ${formStatus ? "blur-sm" : ""}`}>
+        <div className="  flex flex-col items-center justify-center">
                 <div className=" flex flex-row jaro mb-6 space-x-[900px] ">
                   <div className='text-[24px]'>
                   <img 
@@ -85,7 +106,15 @@ function App() {
   
                   </div>
                 </div>
-                <div className=' shadow-xl w-full rounded-lg h-[320px] ' style={{ backgroundImage:`linear-gradient(to right, ${colors.join(',')}`}}></div>
+                <div className=' shadow-xl w-full rounded-lg h-[320px] text-center' style={{ backgroundImage:`linear-gradient(to right, ${colors.join(',')}`}}>
+                  <div 
+                  className={`mt-36 text-6xl ${selectedTextTheme ? `text-${selectedTextTheme}` : "text-black"} ${font} font-extrabold`}>
+                    {displayText}
+                    </div>
+                    <div className = {`flex items-end justify-end ${displayText ? "mt-20":""}`}>
+                    <MdOutlineFileDownload className = {`w-7 h-7 text-black ${displayText ? "":"mt-32"} mr-10 cursor-pointer`} onClick={()=>downloadGradientAsPNG(colors,displayText)}/>
+                    </div>
+                </div>
                 <div className="flex flex-row justify-center space-x-5 mt-4">
                     <ColorPicker
                         style={{ width: '500px',height:"290px" }}
@@ -153,10 +182,25 @@ function App() {
                 </div>
                 
             </div>
-            <div className="flex justify-end -mt-20 mr-5">
-              <div className='bg-blue-700 w-16 h-16 cursor-pointer text-center py-1 text-5xl text-white font-bold  rounded-full'>+</div>
+          
+          <div className="flex justify-end -mt-20 mr-5">
+            <div 
+              className="bg-blue-700 w-16 h-16 cursor-pointer text-center py-1 text-5xl text-white font-bold rounded-full"
+              onClick={() => dispatch(openModal())}
+            >
+              +
             </div>
+          </div>
         </div>
+
+        {formStatus && (
+          <div className="fixed inset-0 flex items-center justify-center">
+            <div className="">
+              <TextForm />
+            </div>
+          </div>
+        )}
+      </div>
     );
 }
 
